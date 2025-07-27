@@ -145,6 +145,8 @@ class WanSelfAttention(nn.Module):
             return q, k, v
 
         q, k, v = qkv_fn(x)
+        
+        breakpoint()
 
         x = flash_attention(
             q=rope_apply(q, grid_sizes, freqs),
@@ -152,6 +154,8 @@ class WanSelfAttention(nn.Module):
             v=v,
             k_lens=seq_lens,
             window_size=self.window_size)
+        
+        breakpoint()
 
         # output
         x = x.flatten(2)
