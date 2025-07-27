@@ -189,6 +189,13 @@ python generate.py  --task t2v-1.3B --size 832*480 --ckpt_dir ./Wan2.1-T2V-1.3B 
   Of course, you can also combine the use of `Ulysses` and `Ring` strategies.
 
 
+For the 1.3B parameters model and 2 GPUs, that would give:
+
+``` sh
+torchrun --nproc_per_node=2 generate.py  --task t2v-1.3B --size 832*480 --ckpt_dir ./Wan2.1-T2V-1.3B --dit_fsdp --t5_fsdp --ulysses_size 2 --prompt "Two anthropomorphic cats in comfy boxing gear and bright gloves fight intensely on a spotlighted stage."
+```
+
+
 ``` sh
 pip install "xfuser>=0.4.1"
 torchrun --nproc_per_node=8 generate.py --task t2v-14B --size 1280*720 --ckpt_dir ./Wan2.1-T2V-14B --dit_fsdp --t5_fsdp --ulysses_size 8 --prompt "Two anthropomorphic cats in comfy boxing gear and bright gloves fight intensely on a spotlighted stage."

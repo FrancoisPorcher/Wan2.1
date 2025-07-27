@@ -1,5 +1,6 @@
 # Copyright 2024-2025 The Alibaba Wan Team Authors. All rights reserved.
 import math
+import os
 
 import torch
 import torch.cuda.amp as amp
@@ -7,7 +8,12 @@ import torch.nn as nn
 from diffusers.configuration_utils import ConfigMixin, register_to_config
 from diffusers.models.modeling_utils import ModelMixin
 
-from .attention import flash_attention
+def is_main_process():
+    # Common environment variable set by torchrun for rank
+    rank = int(os.environ.get('RANK', 0))
+    return rank == 0
+
+from .attention import flash_attention, attention
 
 __all__ = ['WanModel']
 
@@ -145,15 +151,27 @@ class WanSelfAttention(nn.Module):
             return q, k, v
 
         q, k, v = qkv_fn(x)
-        
-        breakpoint()
+                
+        x = attention(                       #  ✨ call the wrapper
+                q=rope_apply(q, grid_sizes, freqs),
+                k=rope_apply(k, grid_sizes, freqs),
+                v=v,
+                k_lens=seq_lens,
+                window_size=self.window_size,
+                # everything else keeps its default
+        )
+        if is_main_process():
+            print("q shape", q.shape)
+            print("x shape", x.shape)
+            breakpoint()
+                
 
-        x = flash_attention(
-            q=rope_apply(q, grid_sizes, freqs),
-            k=rope_apply(k, grid_sizes, freqs),
-            v=v,
-            k_lens=seq_lens,
-            window_size=self.window_size)
+        # x = flash_attention(
+        #     q=rope_apply(q, grid_sizes, freqs),
+        #     k=rope_apply(k, grid_sizes, freqs),
+        #     v=v,
+        #     k_lens=seq_lens,
+        #     window_size=self.window_size)
         
         breakpoint()
 
